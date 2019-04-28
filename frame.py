@@ -93,6 +93,94 @@ class FishLogo(Frame):
             self.screen.blit(black, (0, 0))
             self.game.update_screen()
 
+        return Title(self.game)
+
+class Title(Frame):
+
+    def __init__(self, game):
+
+        self.game = game
+        self.logo = pygame.image.load("splash.png")
+        self.screen = game.screen
+
+    def run(self):
+
+        black = pygame.Surface(GAME_SIZE)
+        black.set_alpha(255)
+
+        enter = pygame.image.load("enter_to_begin.png")
+
+        start = time.time()
+        time.sleep(0.01)
+        
+        while True:
+
+            duration = 0.25
+            events = self.game.global_update(1)
+            if (time.time() - start > duration): break
+        
+        start = time.time()
+        time.sleep(0.01)
+        
+        while True:
+
+            duration = 0.75
+            
+            events = self.game.global_update(1)
+            
+            elapsed = time.time() - start
+            
+            if (1 - elapsed/duration < 0): break
+            
+            black.set_alpha(255 * (1 - elapsed/duration))
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(self.logo, (GAME_WIDTH/2 - self.logo.get_width()/2,
+                                        GAME_HEIGHT/2 - self.logo.get_height()/2))
+            self.screen.blit(black, (0, 0))
+            self.game.update_screen()
+
+        start = time.time()
+        time.sleep(0.01)
+        
+        while True:
+
+            self.game.clear_screen()
+            self.game.screen.blit(self.logo, (0, 0))
+
+            if time.time() % 1 <= 0.5:
+                self.game.screen.blit(enter, (234, 188))
+
+            self.game.update_screen()
+
+            events = self.game.global_update(0.01)
+            do_break = False
+            for event in events:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        do_break = True
+
+            if do_break: break
+
+        start = time.time()
+        time.sleep(0.01)
+        
+        while True:
+
+            duration = 0.75
+            
+            events = self.game.global_update(1)
+            
+            elapsed = time.time() - start
+            
+            if (1 - elapsed/duration < 0): break
+            
+            black.set_alpha(255 * (elapsed/duration))
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(self.logo, (GAME_WIDTH/2 - self.logo.get_width()/2,
+                                        GAME_HEIGHT/2 - self.logo.get_height()/2))
+            self.screen.blit(black, (0, 0))
+            self.game.update_screen()
+
         return Level1(self.game)
 
 class Work(Frame):
@@ -119,6 +207,8 @@ class Work(Frame):
 
         then = time.time()
         time.sleep(0.01)
+
+        message = None
 
         
 
@@ -154,6 +244,7 @@ class Work(Frame):
                 paused = True
             elif black_alpha == 0:
                 self.game.g.money += dt*self.game.g.income
+                self.game.g.total_money += dt * self.game.g.income
             
             self.game.clear_screen()
             self.game.screen.fill((100, 100, 100))
@@ -164,6 +255,14 @@ class Work(Frame):
                 you_sprite.update(dt)
             you_sprite.draw(self.game.screen)
 
+            if self.game.g.total_money >= 2.9:
+                self.game.g.total_money -= 2.9
+                if len(self.game.g.messages):
+                    message = self.game.g.messages.pop(0)
+
+            if self.game.g.total_money >= 0.80:
+                message = None
+
             xoff = GAME_WIDTH/2
             yoff = 189
 
@@ -173,6 +272,9 @@ class Work(Frame):
                 
                 self.game.screen.blit(surf, (xoff, yoff))
                 xoff += surf.get_width()
+
+            if message:
+                self.game.screen.blit(message, (148, 24))
 
             self.game.screen.blit(self.black, (0, 0))
 
@@ -244,6 +346,8 @@ class Level1(Frame):
         
         while True:
 
+            if self.game.g.gameover: self.lose_menu.show()
+
             now = time.time()
             dt = now - then
             then = now
@@ -261,7 +365,7 @@ class Level1(Frame):
             next_frame = self.check_events(dt, events)
 
             if next_frame != 0:
-                return next_frame(self.game)
+                break
 
             self.game.clear_screen()
 
@@ -357,11 +461,38 @@ class Level1(Frame):
 
             self.draw_fortress_bar(dt)
 
-            self.lose_menu.update(dt, events)
+            next_frame = self.lose_menu.update(dt, events)
+            if next_frame:
+                break
+            
             self.lose_menu.draw()
 
             self.game.screen.blit(self.black, (0, 0))
             self.game.update_screen()
+
+        then = time.time()
+        time.sleep(0.01)
+        self.lose_menu.draw()
+        
+        while black_alpha < 10:
+            now = time.time()
+            dt = now - then
+            then = now
+
+            events = self.game.global_update(dt)
+
+            black_alpha = min(100, black_alpha + 24 * dt)
+            self.black.set_alpha(black_alpha)
+
+            self.lose_menu.update(dt, events)
+
+            self.game.screen.blit(self.black, (0, 0))
+            self.game.update_screen()
+
+        if next_frame == 1:
+            return Level1(self.game)
+        else:
+            return next_frame(self.game)
 
     def damage_fortress(self, amt):
 
@@ -395,6 +526,7 @@ class Level1(Frame):
                     if event.key == pygame.K_SPACE:
                         self.space_pressed = 1
                 if event.key == pygame.K_ESCAPE:
+                    self.game.g.gameover = True
                     return Work
                 if event.key == pygame.K_r:
                     self.lose_menu.show()
@@ -409,14 +541,14 @@ class Level1(Frame):
             self.since_last_fireball -= fireball_period           
             self.projectiles.append(self.game.g.projectile(self.game, self.player))
 
-        elif not self.space_pressed:
+        elif not self.space_pressed and self.since_last_fireball > fireball_period:
 
             self.since_last_fireball = fireball_period
 
         return 0
 
                     
-    def make_enemy(self, row, rows, enemy = "goblin"):
+    def make_enemy(self, row, rows, enemy = "goblin", random_row = False):
 
         if enemy == "goblin":
             new_enemy = Goblin(self.game)
@@ -427,7 +559,11 @@ class Level1(Frame):
         else:
             new_enemy = Goblin(self.game)
 
-        new_enemy.row = row + 1
+        if random_row:
+            new_enemy.row = random.choice([1, 2, 3, 4, 5])
+        else:
+            new_enemy.row = row + 1
+            
         new_enemy.pos = rows[-1].tiles[row + 1].pos
         self.enemies.append(new_enemy)
             

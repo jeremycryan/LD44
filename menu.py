@@ -19,6 +19,8 @@ class LoseMenu(object):
                         PowerBoost(self.game, self),
                         Revive(self.game, self)]
 
+        self.return_level = False
+
     def update(self, dt, events):
 
         if self.hidden:
@@ -32,6 +34,9 @@ class LoseMenu(object):
 
         for button in self.buttons:
             button.update(dt, events)
+
+        if self.return_level:
+            return self.return_level
 
     def draw(self):
 
@@ -64,6 +69,7 @@ class LoseMenu(object):
 
         self.target_y = 0
         self.hidden = False
+        self.game.g.gameover = True
 
     def hide(self):
 
@@ -176,4 +182,11 @@ class Revive(Button):
         self.pos = (158, 146)
 
         self.state = "Default"
+
+    def click(self):
+        
+        self.game.g.gameover = False
+        self.parent.hide()
+        self.game.g.money -= self.cost
+        self.parent.return_level = True
     

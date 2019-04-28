@@ -7,6 +7,17 @@ from frame import *
 from constants import *
 from projectile import *
 
+# TODO
+#
+# Enemy spawning
+# Music/Audio
+# Game end condition
+# Fix fireball sprite/animation
+# Tutorial/instruction
+#
+# Enemy types?
+#
+
 class Game(object):
 
     def __init__(self):
@@ -63,7 +74,7 @@ class Globals(object):
 
     def __init__(self):
         self.money = STARTING_MONEY
-        self.income = 0.12
+        self.income = 0.16
 
         self.fortress_max_health = 10
         self.fortress_health = self.fortress_max_health
@@ -76,7 +87,15 @@ class Globals(object):
 
         self.damage = 1
         self.projectile = Fireball
-        self.projectile_period = 0.5
+        self.projectile_period = 0.3
+
+        self.gameover = False
+
+        self.total_money = 0
+
+        self.messages = []
+        for message in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+            self.messages.append(pygame.image.load("message%s.png" % message))
 
         
 
