@@ -353,6 +353,7 @@ class Level1(Frame):
             if self.game.g.gameover:
                 self.lose_menu.killed(self.killed)
                 self.lose_menu.show()
+                self.game.g.fortress_health = 0
             else:
                 self.game.g.stars = 0
 
@@ -473,10 +474,15 @@ class Level1(Frame):
                 while self.projectiles[0].pos[0] > GAME_WIDTH:
                     self.projectiles.pop(0)
                     if not len(self.projectiles): break
+                    
             for i, p in enumerate(self.projectiles):
-                if p.destroy_me: self.projectiles.pop(i)
+                if p.destroy_me:
+                    self.projectiles.pop(i)
+                    continue
                 p.update(dt, events)
                 p.draw()
+
+            print(len(self.projectiles))
 
             self.draw_fortress_bar(dt)
 
