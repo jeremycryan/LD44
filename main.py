@@ -28,9 +28,10 @@ class Game(object):
 
         self.screen = pygame.Surface(GAME_SIZE)
         self.screen_commit = pygame.display.set_mode(WINDOW_SIZE)
+        pygame.display.set_caption("Microtransaction Mages")
 
         self.shake_offset = 0
-        
+
         self.main()
 
     def shake(self, amp=4):
@@ -43,7 +44,7 @@ class Game(object):
 
         while True:
             next_frame = next_frame.run()
-        
+
 
     def global_update(self, dt):
 
@@ -62,7 +63,7 @@ class Game(object):
     def update_screen(self):
 
         yoff = self.shake_offset * math.sin(time.time() * 50)
-        
+
         new = pygame.transform.scale(self.screen, WINDOW_SIZE)
         self.screen_commit.blit(new, (0, yoff))
         pygame.display.flip()
@@ -81,7 +82,7 @@ class Globals(object):
 
         self.money_font = pygame.font.Font("monospace.ttf", 15)
         self.money_font_dict = {}
-        
+
         for char in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "$", ".", "-"]:
             self.money_font_dict[char] = self.money_font.render(char, 0, WHITE)
 
