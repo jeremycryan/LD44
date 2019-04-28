@@ -19,7 +19,15 @@ class LoseMenu(object):
                         PowerBoost(self.game, self),
                         Revive(self.game, self)]
 
+        self.star = pygame.image.load("star.png")
+        self.half_star = pygame.image.load("half_star.png")
+
         self.return_level = False
+
+        self.kill_ct = 0
+
+    def killed(self, num):
+        self.kill_ct = num
 
     def update(self, dt, events):
 
@@ -55,6 +63,36 @@ class LoseMenu(object):
 
             for button in self.buttons:
                 button.draw()
+
+        stars = 0
+
+        if self.kill_ct > 0: stars += 0.5
+        if self.kill_ct > 15: stars += 0.5
+        if self.kill_ct > 30: stars += 0.5
+        if self.kill_ct > 60: stars += 0.5
+        if self.kill_ct > 100: stars += 0.5
+        if self.kill_ct > 150: stars += 0.5
+
+        self.game.g.stars = stars
+
+        pos_1 = (140, 98 + self.y - self.yoff)
+        pos_2 = (185, 94 + self.y - self.yoff)
+        pos_3 = (231, 98 + self.y - self.yoff)
+
+        if stars >= 3:
+            self.game.screen.blit(self.star, pos_3)
+        elif stars >= 2.5:
+            self.game.screen.blit(self.half_star, pos_3)
+
+        if stars >= 2:
+            self.game.screen.blit(self.star, pos_2)
+        elif stars >= 1.5:
+            self.game.screen.blit(self.half_star, pos_2)
+
+        if stars >= 1:
+            self.game.screen.blit(self.star, pos_1)
+        elif stars >= 0.5:
+            self.game.screen.blit(self.half_star, pos_1)
 
 
     def format_money(self):
@@ -142,7 +180,7 @@ class Button(object):
 class SpeedBoost(Button):
 
     def click(self):
-        self.game.g.projectile_period *= 0.8
+        self.game.g.projectile_period *= 0.75
         self.game.g.money -= self.cost
 
 class PowerBoost(Button):

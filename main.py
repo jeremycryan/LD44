@@ -9,9 +9,9 @@ from projectile import *
 
 # TODO
 #
-# Enemy spawning
 # Music/Audio
 # Game end condition
+# Stars on killing enemies
 # Fix fireball sprite/animation
 # Tutorial/instruction
 #
@@ -91,12 +91,13 @@ class Globals(object):
 
         self.gameover = False
 
-        self.total_money = 0
+        self.total_money = 2
 
         self.messages = []
         for message in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
             self.messages.append(pygame.image.load("message%s.png" % message))
 
+        self.image_dict = {}
         
 
 

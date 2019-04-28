@@ -321,7 +321,7 @@ class Level1(Frame):
 
         clouds.append(Cloud(self.game, start = True))
 
-        
+        self.game.g.stars = 0
 
         bk_width = 316
         for x in [0, bk_width, bk_width * 2]:
@@ -342,17 +342,28 @@ class Level1(Frame):
         self.projectiles = []
         self.enemies = []
 
+        self.killed = 0
+
         since_cloud = 0
+        spend = 0
+        spend_incr = self.game.g.damage / self.game.g.projectile_period / 2.5
         
         while True:
 
-            if self.game.g.gameover: self.lose_menu.show()
+            if self.game.g.gameover:
+                self.lose_menu.killed(self.killed)
+                self.lose_menu.show()
+            else:
+                self.game.g.stars = 0
 
             now = time.time()
             dt = now - then
             then = now
 
             if dt <= 0: dt = 0.01
+
+            spend += spend_incr * dt
+            spend_incr *= 1.02**dt
 
             if black_down:
                 black_alpha = max(0, black_alpha - 500 * dt)
@@ -379,11 +390,18 @@ class Level1(Frame):
                                 y = last.pos()[1] + TILE_HEIGHT//2))
                 last = rows[-1]
 
-                if num_rows % 8 == 0 and num_rows > 30:
-                    self.make_enemy(1, rows, "goblin")
-                    self.make_enemy(2, rows, "orc")
-                    self.make_enemy(3, rows, "goblin")
+                if num_rows % 2 == 0 and num_rows > 30:
+                    available_rows = [1, 2, 3, 4, 5]
+                    random.shuffle(available_rows)
+                    while spend > 0 and len(available_rows):
 
+                        e = random.choice(["goblin", "orc"])
+                        if num_rows < 100:
+                            e = "goblin"
+                        self.make_enemy(available_rows.pop(), rows, e)
+                        if e == "orc": spend -= 5
+                        else: spend -= 2
+                    
                 if num_rows % 3 == 1:
                     pillars.append(Pillar(self.game, last.pos()[0] - 3 * TILE_WIDTH,
                                           last.pos()[1] + 3*TILE_HEIGHT))
@@ -416,13 +434,6 @@ class Level1(Frame):
                 c.update(dt, events)
                 c.draw()
 
-            if pillars[0].pos[0] < -TILE_WIDTH*4:
-                pillars = pillars[1:]
-
-            for p in pillars:
-                p.update(dt, events)
-                p.draw()
-
             if rows[0].pos()[0] < -TILE_WIDTH:
                 rows = rows[1:]
 
@@ -441,11 +452,19 @@ class Level1(Frame):
                 e = self.enemies[i]
                 if e.destroy_me:
                     self.enemies.pop(i)
+                    self.killed += 1
                     continue
                 e.check_collisions(self.projectiles)
                 e.update(dt, events)
                 e.draw()
                 i += 1
+
+            if pillars[0].pos[0] < -TILE_WIDTH*4:
+                pillars = pillars[1:]
+
+            for p in pillars:
+                p.update(dt, events)
+                p.draw()
 
             self.player.update(dt, events)
             self.player.draw()
@@ -498,6 +517,7 @@ class Level1(Frame):
 
         self.game.g.fortress_health = max(0, self.game.g.fortress_health - amt)
         if self.game.g.fortress_health <= 0.1:
+            self.lose_menu.killed(self.killed)
             self.lose_menu.show()
         else:
             self.game.shake(15)
@@ -560,13 +580,14 @@ class Level1(Frame):
             new_enemy = Goblin(self.game)
 
         if random_row:
-            new_enemy.row = random.choice([1, 2, 3, 4, 5])
+            new_enemy.row = random.choice([0, 1, 2, 3, 4])
         else:
-            new_enemy.row = row + 1
+            new_enemy.row = row
             
-        new_enemy.pos = rows[-1].tiles[row + 1].pos
+        new_enemy.pos = rows[-1].tiles[row].pos
         self.enemies.append(new_enemy)
-            
+
+        
 
 
 

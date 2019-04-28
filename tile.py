@@ -7,7 +7,11 @@ class Tile(object):
     def __init__(self, game):
 
         self.game = game
-        self.sprite = pygame.image.load("tile1.png")
+        path = "tile1.png"
+        if path in self.game.g.image_dict:
+            self.sprite = self.game.g.image_dict[path].copy()
+        else:
+            self.sprite = pygame.image.load(path)
         self.pos = (GAME_WIDTH, GAME_HEIGHT)
 
     def translate(self, dx, dy):
@@ -40,15 +44,24 @@ class LightTile(Tile):
     def __init__(self, game):
 
         self.game = game
-        self.sprite = pygame.image.load("tile1.png")
+
         self.pos = (GAME_WIDTH/2, GAME_HEIGHT/2)
+        path = "tile1.png"
+        if path in self.game.g.image_dict:
+            self.sprite = self.game.g.image_dict[path].copy()
+        else:
+            self.sprite = pygame.image.load(path)
 
 class DarkTile(Tile):
 
     def __init__(self, game):
 
         self.game = game
-        self.sprite = pygame.image.load("tile2.png")
+        path = "tile2.png"
+        if path in self.game.g.image_dict:
+            self.sprite = self.game.g.image_dict[path].copy()
+        else:
+            self.sprite = pygame.image.load(path)
         self.pos = (GAME_WIDTH/2, GAME_HEIGHT/2)
 
 class Edging(Tile):
@@ -56,7 +69,11 @@ class Edging(Tile):
     def __init__(self, game):
 
         self.game = game
-        self.sprite = pygame.image.load("edging.png")
+        path = "edging.png"
+        if path in self.game.g.image_dict:
+            self.sprite = self.game.g.image_dict[path].copy()
+        else:
+            self.sprite = pygame.image.load(path)
         self.pos = (GAME_WIDTH/2, GAME_HEIGHT/2)
 
 class Row(object):
@@ -105,7 +122,11 @@ class Pillar(Tile):
     def __init__(self, game, x = 0, y = 0):
 
         self.game = game
-        self.sprite = pygame.image.load("pillars.png")
+        path = "pillars.png"
+        if path in self.game.g.image_dict:
+            self.sprite = self.game.g.image_dict[path].copy()
+        else:
+            self.sprite = pygame.image.load(path)
         self.pos = (x, y)
 
 class Backdrop(Tile):
@@ -113,7 +134,11 @@ class Backdrop(Tile):
     def __init__(self, game, x = 0, y = 0):
 
         self.game = game
-        self.sprite = pygame.image.load("background.png")
+        path = "background.png"
+        if path in self.game.g.image_dict:
+            self.sprite = self.game.g.image_dict[path].copy()
+        else:
+            self.sprite = pygame.image.load(path)
         self.pos = (x, y)
 
     def translate(self, dx, dy, parallax = True):
@@ -131,7 +156,12 @@ class Cloud(Tile):
         self.game = game
         sprites = ["cloud_1.png", "cloud_2.png"]
         self.parallax_factor = random.choice([0.4])
-        self.sprite = pygame.image.load(random.choice(sprites))
+        path = random.choice(sprites)
+        if path in self.game.g.image_dict:
+            self.sprite = self.game.g.image_dict[path].copy()
+        else:
+            self.sprite = pygame.image.load(path)
+
         self.pos = (GAME_WIDTH, GAME_HEIGHT * 0.8)
         if start:
             self.pos = (random.random() * GAME_WIDTH,
