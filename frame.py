@@ -207,7 +207,15 @@ class Level1(Frame):
         self.black.fill((0, 0, 0))
         self.black.set_alpha(254)
         black_alpha = 254
-        black_down = True        
+        black_down = True
+
+        self.fortress_bar = pygame.image.load("fortress_bar.png")
+        self.load_bar = pygame.Surface((72, 6))
+        self.load_bar.fill((70, 120, 255))
+        self.load_bar_highlight = pygame.Surface((72, 3))
+        self.load_bar_highlight.fill((45, 90, 240))
+        self.game.g.fortress_health = self.game.g.fortress_max_health
+        self.disp_hp = 1
 
         clouds.append(Cloud(self.game, start = True))
 
@@ -267,7 +275,7 @@ class Level1(Frame):
                                 y = last.pos()[1] + TILE_HEIGHT//2))
                 last = rows[-1]
 
-                if num_rows % 8 == 0 and num_rows > 20:
+                if num_rows % 8 == 0 and num_rows > 30:
                     self.make_enemy(1, rows, "goblin")
                     self.make_enemy(2, rows, "orc")
                     self.make_enemy(3, rows, "goblin")
@@ -320,7 +328,8 @@ class Level1(Frame):
 
             if len(self.enemies):
                 while self.enemies[0].pos[0] < -TILE_WIDTH:
-                    self.enemies.pop(0)
+                    popped = self.enemies.pop(0)
+                    self.damage_fortress(popped.hp)
                     if not len(self.enemies): break
 
             i = 0
@@ -346,12 +355,33 @@ class Level1(Frame):
                 p.update(dt, events)
                 p.draw()
 
+            self.draw_fortress_bar(dt)
 
             self.lose_menu.update(dt, events)
             self.lose_menu.draw()
 
             self.game.screen.blit(self.black, (0, 0))
             self.game.update_screen()
+
+    def damage_fortress(self, amt):
+
+        self.game.g.fortress_health = max(0, self.game.g.fortress_health - amt)
+        if self.game.g.fortress_health <= 0.1:
+            self.lose_menu.show()
+        else:
+            self.game.shake(15)
+
+    def draw_fortress_bar(self, dt):
+
+        self.game.screen.blit(self.fortress_bar, (290, 20))
+        hp = self.game.g.fortress_health/self.game.g.fortress_max_health
+        dhp = hp - self.disp_hp
+        self.disp_hp += dt * dhp * 5
+        bar = pygame.transform.scale(self.load_bar, (int(72 * self.disp_hp), 6))
+        self.game.screen.blit(bar, (290 + 31, 20 + 14))
+        bar2 = pygame.transform.scale(self.load_bar_highlight, (bar.get_width(), 3))
+        self.game.screen.blit(bar2, (290 + 31, 20 + 14))
+        pass
 
     def check_events(self, dt, events):
 

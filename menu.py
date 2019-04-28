@@ -77,10 +77,11 @@ class Button(object):
         self.game = game
         self.parent = parent
 
-        self.cost = 2.99
+        self.cost = 5.99
 
         self.default_surf = pygame.image.load("speed_boost_default.png")
         self.hover_surf = pygame.image.load("speed_boost_hover.png")
+        self.disabled_surf = pygame.image.load("speed_boost_disabled.png")
 
         self.pos = (41, 165)
 
@@ -89,7 +90,9 @@ class Button(object):
     def update(self, dt, events):
 
         mpos = pygame.mouse.get_pos()
-        if self.pos_in_rect(mpos):
+        if self.game.g.money < self.cost:
+            self.state = "Disabled"
+        elif self.pos_in_rect(mpos):
             self.state = "Hover"
         else:
             self.state = "Default"
@@ -112,6 +115,8 @@ class Button(object):
             self.game.screen.blit(self.default_surf, pos)
         elif self.state == "Hover":
             self.game.screen.blit(self.hover_surf, pos)
+        elif self.state == "Disabled":
+            self.game.screen.blit(self.disabled_surf, pos)
 
     def pos_in_rect(self, pos):
 
@@ -138,17 +143,22 @@ class PowerBoost(Button):
 
     def __init__(self, game, parent):
 
-        self.cost = 3.99
+        self.cost = 8.99
 
         self.game = game
         self.parent = parent
 
         self.default_surf = pygame.image.load("power_boost_default.png")
         self.hover_surf = pygame.image.load("power_boost_hover.png")
+        self.disabled_surf = pygame.image.load("power_boost_disabled.png")
 
         self.pos = (267, 163)
 
         self.state = "Default"
+
+    def click(self):
+        self.game.g.damage += 1
+        self.game.g.money -= self.cost
 
 class Revive(Button):
 
@@ -161,6 +171,7 @@ class Revive(Button):
 
         self.default_surf = pygame.image.load("revive_default.png")
         self.hover_surf = pygame.image.load("revive_hover.png")
+        self.disabled_surf = pygame.image.load("revive_disabled.png")
 
         self.pos = (158, 146)
 

@@ -17,11 +17,12 @@ class Player(object):
         self.sprite.start_animation("Idle")
 
         self.pos = GAME_WIDTH/3, GAME_HEIGHT/3
+        self.render_pos = self.pos
 
     def draw(self):
 
-        self.sprite.x_pos = self.pos[0]
-        self.sprite.y_pos = self.pos[1]
+        self.sprite.x_pos = self.render_pos[0]
+        self.sprite.y_pos = self.render_pos[1]
         self.sprite.draw(self.game.screen)
 
     def update(self, dt, events):
@@ -33,6 +34,13 @@ class Player(object):
                     self.move_left()
                 elif event.key == pygame.K_RIGHT:
                     self.move_right()
+
+        dx = self.pos[0] - self.render_pos[0]
+        dy = self.pos[1] - self.render_pos[1]
+
+        if (abs(dx) + abs(dy) >= 2):
+            self.render_pos = (self.render_pos[0] + dx * dt * 25,
+                        self.render_pos[1] + dy * dt * 25)
 
     def translate(self, dx, dy):
         self.pos = self.pos[0] + dx, self.pos[1] + dy

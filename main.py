@@ -28,7 +28,7 @@ class Game(object):
 
     def main(self):
 
-        next_frame = Level1(self)
+        next_frame = FishLogo(self)
 
         while True:
             next_frame = next_frame.run()
@@ -63,7 +63,10 @@ class Globals(object):
 
     def __init__(self):
         self.money = STARTING_MONEY
-        self.income = 0.4
+        self.income = 0.12
+
+        self.fortress_max_health = 10
+        self.fortress_health = self.fortress_max_health
 
         self.money_font = pygame.font.Font("monospace.ttf", 15)
         self.money_font_dict = {}
@@ -73,7 +76,7 @@ class Globals(object):
 
         self.damage = 1
         self.projectile = Fireball
-        self.projectile_period = 0.2
+        self.projectile_period = 0.5
 
         
 

@@ -18,7 +18,7 @@ class Enemy(object):
 
         self.pos = 0, 0
 
-        self.hp = 2
+        self.hp = 1.2
 
         self.destroy_me = 0
 
