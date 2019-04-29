@@ -108,11 +108,13 @@ class LoseMenu(object):
         self.target_y = 0
         self.hidden = False
         self.game.g.gameover = True
+        self.game.g.mus.set_volume(0.3)
 
     def hide(self):
 
         self.target_y = GAME_HEIGHT
         self.hidden = True
+        self.game.g.mus.set_volume(1)
 
 class Button(object):
 
@@ -182,6 +184,7 @@ class SpeedBoost(Button):
     def click(self):
         self.game.g.projectile_period *= 0.75
         self.game.g.money -= self.cost
+        self.game.g.buy_upgrade_sound.play()
 
 class PowerBoost(Button):
 
@@ -203,6 +206,7 @@ class PowerBoost(Button):
     def click(self):
         self.game.g.damage += 1
         self.game.g.money -= self.cost
+        self.game.g.buy_upgrade_sound.play()
 
 class Revive(Button):
 
@@ -227,4 +231,6 @@ class Revive(Button):
         self.parent.hide()
         self.game.g.money -= self.cost
         self.parent.return_level = True
+
+        self.game.g.buy_upgrade_sound.play()
     

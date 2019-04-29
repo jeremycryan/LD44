@@ -121,6 +121,8 @@ class Title(Frame):
         
         start = time.time()
         time.sleep(0.01)
+
+        self.game.g.mus.play(-1)
         
         while True:
 
@@ -158,6 +160,7 @@ class Title(Frame):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         do_break = True
+                        self.game.g.game_start_sound.play()
 
             if do_break: break
 
@@ -182,6 +185,105 @@ class Title(Frame):
             self.game.update_screen()
 
         return Level1(self.game)
+
+
+class BlackScreen(Frame):
+
+    def run(self):
+
+        t = time.time()
+        while time.time() - t <= 5:
+            self.game.screen.fill((0, 0, 0))
+            self.game.update_screen()
+            self.game.global_update(1)
+        return FishLogo(self.game)
+
+
+class Fired(Frame):
+
+    def run(self):
+        idle = SpriteSheet("cubicle_empty.png", (1, 1), 1)
+        you_sprite = Sprite(5)
+        you_sprite.add_animation({"Idle": idle})
+        you_sprite.start_animation("Idle")
+        you_sprite.x_pos = GAME_WIDTH/2 - 60
+        you_sprite.y_pos = GAME_HEIGHT/2 - 64
+
+        self.black = pygame.Surface(GAME_SIZE)
+        self.black.fill((0, 0, 0))
+        self.black.set_alpha(0)
+        black_alpha = 0
+        black_down = True
+
+        instruction = pygame.image.load("press_to_work.png")
+        
+        paused = True
+        since_type = 10
+
+        then = time.time()
+        time.sleep(0.01)
+
+        message = None
+
+        start = time.time()
+        since_last_sound = 0
+
+        while True:
+
+            now = time.time()
+            dt = now - then
+            then = now
+
+            if time.time() - start > 8:
+                black_down = False
+
+            if black_down:
+                black_alpha = max(0, black_alpha - 500 * dt)
+                self.black.set_alpha(black_alpha)
+            else:
+                black_alpha = min(255, black_alpha + 150 * dt)
+                self.black.set_alpha(black_alpha)
+
+            if black_alpha == 255:
+                return BlackScreen(self.game)
+
+            since_type += dt
+            events = self.game.global_update(dt)
+            
+            self.game.clear_screen()
+            self.game.screen.fill((100, 100, 100))
+
+            self.game.screen.blit(instruction, (GAME_WIDTH/2 - instruction.get_width()/2, 175))
+
+            if not paused:
+                you_sprite.update(dt)
+            you_sprite.draw(self.game.screen)
+
+
+            xoff = GAME_WIDTH/2
+            yoff = 189
+
+            surfs = [self.game.g.money_font_dict[char] for char in self.format_money()]
+            xoff = GAME_WIDTH/2 - sum([surf.get_width() for surf in surfs])/2 
+            for surf in surfs:
+                
+                self.game.screen.blit(surf, (xoff, yoff))
+                xoff += surf.get_width()
+
+            if message:
+                self.game.screen.blit(message, (148, 24))
+
+            self.game.screen.blit(self.black, (0, 0))
+
+            self.game.update_screen()
+
+    def format_money(self):
+
+        a = "$" + str(round(self.game.g.money, 2))
+        while len(a.split(".")[1]) < 2:
+            a += "0"
+
+        return a
 
 class Work(Frame):
 
@@ -210,13 +312,15 @@ class Work(Frame):
 
         message = None
 
-        
+        since_last_sound = 0
 
         while True:
 
             now = time.time()
             dt = now - then
             then = now
+
+            
 
             if black_down:
                 black_alpha = max(0, black_alpha - 500 * dt)
@@ -242,9 +346,15 @@ class Work(Frame):
 
             if since_type >= 0.25:
                 paused = True
+                since_last_sound = 0.2
             elif black_alpha == 0:
+                since_last_sound += dt
                 self.game.g.money += dt*self.game.g.income
                 self.game.g.total_money += dt * self.game.g.income
+
+            if since_last_sound > 0.2 and black_down:
+                self.game.g.work_sound.play()
+                since_last_sound -= 0.2
             
             self.game.clear_screen()
             self.game.screen.fill((100, 100, 100))
@@ -258,9 +368,12 @@ class Work(Frame):
             if self.game.g.total_money >= 2.9:
                 self.game.g.total_money -= 2.9
                 if len(self.game.g.messages):
+                    self.game.g.email_sound.play()
                     message = self.game.g.messages.pop(0)
 
             if self.game.g.total_money >= 0.80:
+                if not len(self.game.g.messages) and self.game.g.total_money >= 1.2:
+                    return Fired(self.game)
                 message = None
 
             xoff = GAME_WIDTH/2
@@ -293,6 +406,11 @@ class Level1(Frame):
 
     def run(self):
 
+        if not self.game.g.music_playing:
+            self.game.g.mus.play(-1)
+            self.game.g.music_playing = True
+
+        self.played_sound = False
 
         self.lose_menu = LoseMenu(self.game)
 
@@ -454,6 +572,7 @@ class Level1(Frame):
                 if e.destroy_me:
                     self.enemies.pop(i)
                     self.killed += 1
+                    self.game.g.enemy_death_sound.play()
                     continue
                 e.check_collisions(self.projectiles)
                 e.update(dt, events)
@@ -482,7 +601,6 @@ class Level1(Frame):
                 p.update(dt, events)
                 p.draw()
 
-            print(len(self.projectiles))
 
             self.draw_fortress_bar(dt)
 
@@ -498,6 +616,9 @@ class Level1(Frame):
         then = time.time()
         time.sleep(0.01)
         self.lose_menu.draw()
+
+        self.game.g.mus.fadeout(500)
+        self.game.g.music_playing = False
         
         while black_alpha < 10:
             now = time.time()
@@ -525,13 +646,19 @@ class Level1(Frame):
         if self.game.g.fortress_health <= 0.1:
             self.lose_menu.killed(self.killed)
             self.lose_menu.show()
+            if not self.played_sound:
+                self.game.g.take_damage_sound.play()
+                self.game.g.revive_sound.play()
+                self.played_sound = True
         else:
             self.game.shake(15)
+            self.game.g.take_damage_sound.play()
 
     def draw_fortress_bar(self, dt):
 
         self.game.screen.blit(self.fortress_bar, (290, 20))
         hp = self.game.g.fortress_health/self.game.g.fortress_max_health
+        hp = max(hp, 0)
         dhp = hp - self.disp_hp
         self.disp_hp += dt * dhp * 5
         bar = pygame.transform.scale(self.load_bar, (int(72 * self.disp_hp), 6))
@@ -553,8 +680,10 @@ class Level1(Frame):
                         self.space_pressed = 1
                 if event.key == pygame.K_ESCAPE:
                     self.game.g.gameover = True
+                    self.game.g.revive_sound.play()
                     return Work
                 if event.key == pygame.K_r:
+                    self.game.g.revive_sound.play()
                     self.lose_menu.show()
 
             if event.type == pygame.KEYUP:

@@ -68,6 +68,7 @@ class Enemy(object):
         self.sprite.start_animation("Hurt")
         self.active_sprite = "Hurt"
         self.since_last_hit = 0
+        self.game.g.hit_enemy_sound.play()
 
         if self.destroy_me:
             self.game.shake()

@@ -43,6 +43,7 @@ class Player(object):
                         self.render_pos[1] + dy * dt * 25)
 
     def translate(self, dx, dy):
+        self.game.g.player_move_sound.play()
         self.pos = self.pos[0] + dx, self.pos[1] + dy
 
     def move_left(self):

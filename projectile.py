@@ -51,7 +51,7 @@ class Projectile(object):
             self.sprite.start_animation("Hit")
             self.speed = -SCROLL_SPEED
 
-            self.destroy_counter = 5/12
+            self.destroy_counter = 5.0/12
             self.destroyed = True
 
         if kill:
@@ -65,6 +65,7 @@ class Fireball(Projectile):
         Projectile.__init__(self, game, player)
         self.speed = FIREBALL_SPEED
         self.pos = self.pos[0], self.pos[1] + TILE_HEIGHT/3
+        self.game.g.shoot_sound.play()
 
     def destroy(self, kill = False):
 
