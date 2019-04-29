@@ -1,5 +1,6 @@
 from constants import *
 import pygame
+import time
 
 class LoseMenu(object):
 
@@ -21,6 +22,7 @@ class LoseMenu(object):
 
         self.star = pygame.image.load("star.png")
         self.half_star = pygame.image.load("half_star.png")
+        self.cover = pygame.image.load("press_esc.png")
 
         self.return_level = False
 
@@ -63,6 +65,10 @@ class LoseMenu(object):
 
             for button in self.buttons:
                 button.draw()
+
+            if self.game.g.money < 1.99:
+                if time.time() % 1 > 0.5:
+                    self.game.screen.blit(self.cover, (0, self.y - self.yoff))
 
         stars = 0
 

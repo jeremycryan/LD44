@@ -341,7 +341,8 @@ class Work(Frame):
                     since_type = 0
 
                     if event.key == pygame.K_ESCAPE:
-                        black_down = False
+                        if len(self.game.g.messages):
+                            black_down = False
             
 
             if since_type >= 0.25:
@@ -412,6 +413,7 @@ class Level1(Frame):
 
         self.played_sound = False
 
+
         self.lose_menu = LoseMenu(self.game)
 
         self.since_last_fireball = 0
@@ -428,6 +430,11 @@ class Level1(Frame):
         self.black.set_alpha(254)
         black_alpha = 254
         black_down = True
+
+        self.white = pygame.Surface(GAME_SIZE)
+        self.white.fill((255, 255, 255))
+        self.white.set_alpha(0)
+        self.white_alpha = 0
 
         self.fortress_bar = pygame.image.load("fortress_bar.png")
         self.load_bar = pygame.Surface((72, 6))
@@ -607,6 +614,10 @@ class Level1(Frame):
             next_frame = self.lose_menu.update(dt, events)
             if next_frame:
                 break
+
+            self.white_alpha = self.white_alpha * 0.05**dt
+            self.white.set_alpha(self.white_alpha)
+            self.game.screen.blit(self.white, (0, 0))
             
             self.lose_menu.draw()
 
@@ -619,6 +630,7 @@ class Level1(Frame):
 
         self.game.g.mus.fadeout(500)
         self.game.g.music_playing = False
+
         
         while black_alpha < 10:
             now = time.time()
@@ -653,6 +665,7 @@ class Level1(Frame):
         else:
             self.game.shake(15)
             self.game.g.take_damage_sound.play()
+            self.white_alpha = 100
 
     def draw_fortress_bar(self, dt):
 
