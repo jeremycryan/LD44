@@ -26,6 +26,7 @@ class FishLogo(Frame):
 
     def __init__(self, game):
 
+        game.g.__init__()
         self.game = game
         self.logo = pygame.image.load("star_fish.png")
         self.screen = game.screen
@@ -366,13 +367,13 @@ class Work(Frame):
                 you_sprite.update(dt)
             you_sprite.draw(self.game.screen)
 
-            if self.game.g.total_money >= 2.9:
-                self.game.g.total_money -= 2.9
+            if self.game.g.total_money >= 4.2:
+                self.game.g.total_money -= 4.2
                 if len(self.game.g.messages):
                     self.game.g.email_sound.play()
                     message = self.game.g.messages.pop(0)
 
-            if self.game.g.total_money >= 0.80:
+            if self.game.g.total_money >= 0.90:
                 if not len(self.game.g.messages) and self.game.g.total_money >= 1.2:
                     return Fired(self.game)
                 message = None

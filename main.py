@@ -122,6 +122,8 @@ class Globals(object):
             self.messages.append(pygame.image.load("message%s.png" % message))
 
 
+        self.messages = [self.messages[-1]]
+
         self.image_dict = {}
         
 
